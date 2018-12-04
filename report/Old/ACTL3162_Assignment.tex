@@ -1,0 +1,78 @@
+% !TeX spellcheck = en_GB
+\documentclass{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsmath,amsfonts,amsthm,bm} 
+\title{ACTL3162 General Insurance Techniques Assignment}
+\author{Johnny Wong, z5016960}
+
+\begin{document}
+	\maketitle
+	
+	\section{Task 1}
+	\subsection{Summary}
+	The Maximum Likelihood Estimator (MLE) was found for 3 distributions: Pareto, Log-normal, and Gamma. With the lowest criterion, it was found that the     distribution fit this data the best.\\
+	
+	The following table summarises the estimated parameters, their log likelihoods and their associated Aikaike Information Criteria (AIC) and Bayesian Information Criteria (BIC).
+	
+	\subsection{General procedure}
+	The MLE is calculated by first finding the likelihood function. This is simply the product of the probability density function (pdf) evaluated at each data point. Furthermore, each the contribution of the pdf from each datapoint is adjusted for the claim's level of excess. \\
+	Noting that every policy has a minimum \$700 excess, and that each policy can have an additional excess, if we let the following denote the characteristics of the $i$th claim,	
+	\begin{align*}
+		\text{Additional excess} &= e_i \Rightarrow	\text{Overall excess} = d_i = 700 + e_i\\
+		\text{Paid amount} &= p_i\\
+		\text{Claim amount} &= x_i = d_i + p_i
+	\end{align*}
+	then the likelihood is calculated as,
+	\begin{align*}
+		L &= \prod_{i = 1}^{n}\frac{f(x_i)}{1-F(d_i)}
+	\end{align*}
+	Where:\\
+	$n = 1185$ is the number of claims recorded\\
+	$f$ is the pdf\\
+	$F$ is the Cumulative Distribution Function (cdf)\\
+	\\
+	The denominator adjusts for the fact that since an observation is not truncated out, it must have a claim size above the deductible.\\
+	\\
+	For computational efficiency, the natural logarithm is applied to the likelihood, resulting in the log-likelihood.
+	$$l=\sum_{i=1}^{n}\left[\ln(f(x_i)) - \ln(1-F(d_i))\right]$$
+	If we let $\bm\beta$ represent the vector of distribution parameters, then the MLE, $\bm{\hat{\beta}}^{MLE}$, is the solution to:
+	\begin{align*}
+		\frac{\partial l}{\partial \bm{\beta}} &= \bm{0} \qquad \text{subject to}\\
+		\frac{\partial ^2 l}{\partial \bm{\beta}^2} &< \bm{0}
+	\end{align*}
+
+	Where $\bm 0$ is the zero vector.
+	
+	\subsection{Pareto distribution}
+	The Pareto distribution has two parameters, a shape parameter $ \alpha $, and a scale parameter $ \beta $. With these two parameters, the pdf and CDF are 
+	\begin{align*}
+		f(x) &= \frac{\alpha \beta^\alpha}{x^{\alpha + 1}}, \quad x \geq \beta\\
+		F(x) &= 1-\left(\frac{\beta}{x}\right)^\alpha, \quad x \geq \beta
+	\end{align*}
+	It can be shown (see appendix) that the MLE for the Pareto distribution is:
+	$$\hat{\alpha}^{MLE} = \frac{n}{\sum_{i=1}^{n}\ln\left(\frac{x_i}{d_i}\right)}$$
+	
+	\appendix
+	\section{Task1}
+	\subsection{MLE for Pareto}
+	We start with the density and distribution functions:
+	\begin{align*}
+	f(x) &= \frac{\alpha \beta^\alpha}{x^{\alpha + 1}}, \quad x\geq\beta\\
+	F(x) &= 1-\left(\frac{\beta}{x}\right)^\alpha, \quad x \geq \beta
+	\end{align*}
+	The likelihood is 
+	\begin{align*}
+		l&=\sum_{i=1}^{n}\left[\ln(f(x_i)) - \ln(1-F(d_i))\right]\\
+		&=\sum_{i=1}^{n}\left[\ln\left(\frac{\alpha \beta ^\alpha}{x_i ^ {\alpha + 1}}\right)-\ln\left(\left(\frac{\beta}{d_i}\right)^\alpha\right) \right]\\
+		&=\sum_{i=1}^{n}\left[\ln(\alpha) + \alpha\ln(\beta)-(\alpha + 1)\ln(x_i)-\alpha\ln(\beta)+\alpha\ln(d_i)\right]\\
+		&=\sum_{i=1}^{n}\left[\ln(\alpha) - (\alpha+1)\ln(x_i)+\alpha\ln(d_i)\right]\\
+		&=n\ln(\alpha)+\alpha\sum_{i=1}^{n}\ln\left(\frac{d_i}{x_i}\right) - \sum_{i=1}^{n}\ln(x_i)
+	\end{align*}
+	Note how it does not depend on $\beta$. We differentiate with respect to $\alpha$ and set it to 0 to find the MLE, $\hat{\alpha}^{MLE}$
+	\begin{align*}
+		0 &=\frac{\partial l}{\partial \alpha} \\
+		&=\frac{n}{\hat{\alpha}^{MLE}}+\sum_{i=1}^{n}\ln\left(\frac{d_i}{x_i}\right)\\
+		\hat{\alpha}^{MLE} &= \frac{n}{\sum_{i=1}^{n}\ln\left(\frac{x_i}{d_i}\right)}
+	\end{align*}
+\end{document}

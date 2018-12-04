@@ -1,0 +1,142 @@
+% !TeX spellcheck = en_GB
+\documentclass{article}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath,amsfonts,amsthm,bm, amssymb} 
+\usepackage{listing}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{courier}
+\title{ACTL3162 General Insurance Techniques Assignment}
+\author{Johnny Wong, z5016960}
+
+\begin{document}
+	\maketitle
+	
+	\section{Task 1}
+	\subsection{Summary}
+	The Maximum Likelihood Estimator (MLE) was found for 3 distributions: Pareto, Log-normal, and Gamma. With the lowest criterion, it was found that the     distribution fit this data the best.\\
+	
+	The following table summarises the estimated parameters, their log likelihoods and their associated Aikaike Information Criteria (AIC) and Bayesian Information Criteria (BIC).
+	
+	\subsection{General procedure}
+	The MLE is calculated by first finding the likelihood function. This is simply the product of the probability density function (pdf) evaluated at each data point. Furthermore, each the contribution of the pdf from each datapoint is adjusted for the claim's level of excess. \\
+	Noting that every policy has a minimum \$700 excess, and that each policy can have an additional excess, if we let the following denote the characteristics of the $i$th claim,	
+	\begin{align*}
+		\text{Additional excess} &= e_i \Rightarrow	\text{Overall excess} = d_i = 700 + e_i\\
+		\text{Paid amount} &= p_i\\
+		\text{Claim amount} &= x_i = d_i + p_i
+	\end{align*}
+	then the likelihood is calculated as,
+	\begin{align*}
+		L &= \prod_{i = 1}^{n}\frac{f(x_i)}{1-F(d_i)}
+	\end{align*}
+	Where:\\
+	$n = 1185$ is the number of claims recorded\\
+	$f$ is the pdf\\
+	$F$ is the Cumulative Distribution Function (cdf)\\
+	\\
+	The denominator adjusts for the fact that since an observation is not truncated out, it must have a claim size above the deductible.\\
+	\\
+	For computational efficiency, the natural logarithm is applied to the likelihood, resulting in the log-likelihood.
+	\begin{equation}
+		l=\sum_{i=1}^{n}\left[\ln(f(x_i)) - \ln(1-F(d_i))\right] \label{loglik}
+	\end{equation}
+
+	If we let $\bm\theta$ represent the vector of distribution parameters, then the MLE, $\bm{\hat{\theta}}^{MLE}$, is the solution to:
+	\begin{align*}
+		\frac{\partial l}{\partial \bm{\theta}} &= \bm{0} \qquad \text{subject to}\\
+		\frac{\partial ^2 l}{\partial \bm{\theta}^2} &< \bm{0}
+	\end{align*}
+
+	Where $\bm 0$ is the zero vector.
+	
+	\subsection{Pareto distribution}
+	The Pareto distribution has two parameters, a shape parameter $ \alpha $, and a scale parameter $ \lambda $. With these two parameters, the pdf and CDF are 
+	\begin{align*}
+		f(x) &= \frac{\alpha \lambda^\alpha}{(\lambda+x)^{\alpha + 1}}, \quad x > 0\\
+		F(x) &= 1-\left(\frac{\lambda}{\lambda + x}\right)^\alpha, \quad x > 0
+	\end{align*}
+	This yields a log likelihood of
+	$$ l=\sum_{i=1}^{n}\left[\ln(\alpha) - (\alpha + 1)\ln(\lambda + x_i) + \alpha\ln(\lambda+d_i)\right]$$
+	By setting the first derivatives to 0, we can express the MLE of $\alpha$ in terms of $\lambda$.
+	\begin{align}
+	\hat{\alpha} = \frac{-n}{\sum_{i=1}^{n}\ln\left(\frac{\hat{\lambda} + d_i}{\hat{\lambda}+x_i}\right)} \label{pareto_dl_da}
+	\end{align}
+	Therefore, we can theoretically find the MLE of $\alpha$ by first finding the mle of $\lambda$. Unfortunately, this is not as straight forward as it may seem. There is no finite $\lambda$ that will maximise the log likelihood, as the log likelihood is always increasing with respect to $\lambda$.
+	$$\frac{\partial l}{\partial\lambda}=\sum_{i=1}^{n}\left[\frac{-(\alpha+1)}{\lambda+x_i}+\frac{\alpha}{\lambda+d_i}\right]$$
+	Practically, the above derivative is almost always positive since $x_i \geq d_i$.\\
+	As such, we are unable to find estimates of our parameters by maximum likelihood as the likelihood has no maximum. In fact, a higher $\lambda$ will always result in a higher likelihood.\\
+	This is not too much of an issue as both the log-normal and gamma distribution is shown to be a much better fit anyways. For sake of providing an estimate, the mle given are:
+	\begin{align*}
+		\hat{\lambda} &= 200,000\\
+		\hat{\alpha} &= 51.18
+	\end{align*}
+	The above parameters yield a negative log likelihood of:
+	$$-l = 11,014.80$$
+	
+	
+	\subsection{Log-Normal distribution}
+	The Log-Normal (LN) distribution also has two parameters: $\mu$ and $ \sigma$.\\
+	The pdf of a LN distribution with these parameters is
+	$$f(x; \mu, \sigma) = \frac{1}{\sigma \sqrt{2\pi}}\frac{1}{x}\exp\left[-\frac{1}{2}\left(\frac{\log x-\mu}{\sigma}\right)^2\right], \, x>0$$
+	There is no analytical solution to find the MLE so numerical techniques are used. A variety of initial estimates were tested, and all converged to an mle estimate:
+	\begin{align*}
+		\hat{\mu} &= 8.432\\
+		\hat{\sigma} &= 0.396
+	\end{align*}
+	This yields a negative log likelihood of
+	$$ -l = 10,571.328$$
+	
+	
+	\subsection{Gamma distribution}
+	The Gamma distribution also has two parameters: shape parameter $\alpha$ and rate parameter $\lambda$. With density function
+	$$f(x; \alpha, \lambda) = \frac{\lambda^\alpha}{\Gamma(\alpha)}x^{\alpha-1}e^{-\lambda x}, \, x>0$$
+	Similar to the LN distribution, there is no analytical solution to finding the mle solutions. Numerical solutions are employed to find the estimates to be:
+	\begin{align*}
+		\alpha &= 6.555\\
+		\lambda &= 0.001
+	\end{align*}
+	Which yields a negative log likelihood of:
+	$$-l = 10,576.264$$
+	\appendix
+	\section{Task 1}
+	\subsection{MLE for Pareto}
+	The Pareto distribution with shape parameter $ \alpha $, scale parameter $ \lambda $ have the following distributions:
+	\begin{align*}
+	f(x) &= \frac{\alpha \lambda^\alpha}{(\lambda+x)^{\alpha + 1}}, \quad x > 0\\
+	F(x) &= 1-\left(\frac{\lambda}{\lambda + x}\right)^\alpha, \quad x > 0
+	\end{align*}
+	From equation (\ref{loglik}) we know that 
+	\begin{align*}
+		l&=\sum_{i=1}^{n}\left[\ln(f(x_i)) - \ln(1-F(d_i))\right]\\
+		&=\sum_{i=1}^{n}\left[\ln\left(\frac{\alpha\lambda^\alpha}{(\lambda + x_i)^{\alpha+1}}\right) - \ln\left(\left(\frac{\lambda}{\lambda + d_i}\right)^\alpha\right)\right]\\
+		&=\sum_{i=1}^{n}\left[\ln(\alpha) - (\alpha + 1)\ln(\lambda + x_i) + \alpha\ln(\lambda+d_i)\right]\\
+	\end{align*}
+	Differentiating with respect to $\alpha$ and $\lambda$ yields:
+	\begin{align}
+		\frac{\partial l}{\partial\alpha}&=\frac{n}{\alpha} +\sum_{i=1}^{n}\ln\left(\frac{\lambda + d_i}{\lambda+x_i}\right)\\
+		\frac{\partial l}{\partial\lambda}&=\sum_{i=1}^{n}\left[\frac{-(\alpha+1)}{\lambda+x_i}+\frac{\alpha}{\lambda+d_i}\right]
+	\end{align}
+	Differentiating again confirms that the second order condition is also satisfied:
+	\begin{align*}
+		\frac{\partial^2 l}{\partial \alpha^2} & = -\frac{n}{\alpha^2}<0\\
+		\frac{\partial^2 l}{\partial \lambda^2} & = \sum_{i=1}^{n}\left[\frac{(\alpha+1)}{(\lambda+x_i)^2}-\frac{\alpha}{(\lambda+d_i)^2}\right]\\
+		&=\sum_{i=1}^{n}\left[\frac{\alpha}{(\lambda+x_i)^2}-\frac{\alpha}{(\lambda+d_i)^2 }+\frac{1}{(\lambda+x_i)^2}\right]\\
+		&\approx \sum_{i=1}^{n}\left[\frac{\alpha}{(\lambda+x_i)^2}-\frac{\alpha}{(\lambda+d_i)^2 }\right]\\
+		&\leq 0 \quad \text{since} \quad x_i \geq d_i \quad \forall \, i = 1,\ldots ,n
+	\end{align*}
+	We set the first derivatives to $0$ and solve to to find the MLE:
+	\begin{align}
+		\frac{\partial l}{\partial\alpha}&=0 \nonumber\\
+		\Leftrightarrow 0 &= \frac{n}{\hat{\alpha}} +\sum_{i=1}^{n}\ln\left(\frac{\hat{\lambda} + d_i}{\hat{\lambda}+x_i}\right) \nonumber\\
+		\Leftrightarrow \hat{\alpha} &= \frac{-n}{\sum_{i=1}^{n}\ln\left(\frac{\hat{\lambda} + d_i}{\hat{\lambda}+x_i}\right)}\\
+		\frac{\partial l}{\partial\lambda} &=0 \nonumber \\
+		\Leftrightarrow 0 & =\sum_{i=1}^{n}\left[\frac{-(\hat{\alpha}+1)}{\hat{\lambda}+x_i}+\frac{\hat{\alpha}}{\hat{\lambda}+d_i}\right] \label{pareto_dl_dl}
+	\end{align}
+	Substituting equation (\ref{pareto_dl_da}) into equation (\ref{pareto_dl_dl}) we get an equality for $\hat{\lambda}$:
+	$$0 = \sum_{i=1}^{n} \left[\frac{-\left(\frac{-n}{\sum_{i=1}^{n}\ln\left(\frac{\hat{\lambda} + d_i}{\hat{\lambda}+x_i}\right)}+1\right)}{\hat{\lambda}+x_i}+\frac{\frac{-n}{\sum_{i=1}^{n}\ln\left(\frac{\hat{\lambda} + d_i}{\hat{\lambda}+x_i}\right)}}{\hat{\lambda}+d_i}\right] $$
+	Which can be solved numerically.
+	
+	\subsection{R code}
+	%\includegraphics[scale = 1]{Pareto_estimates}
+\end{document}
